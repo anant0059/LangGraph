@@ -4,22 +4,30 @@ from langgraph.graph import StateGraph, END
 from typing import TypedDict, Annotated, Sequence
 from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage, ToolMessage
 from operator import add as add_messages
-from langchain_openai import ChatOpenAI
-from langchain_openai import OpenAIEmbeddings
+# from langchain_openai import ChatOpenAI
+# from langchain_openai import OpenAIEmbeddings
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
 from langchain_core.tools import tool
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_groq import ChatGroq
+# from langchain.embeddings import HuggingFaceEmbeddings
 
+embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 load_dotenv()
+groq_api_key = os.environ.get("groq_api_key")
 
-llm = ChatOpenAI(
-    model="gpt-4o", temperature = 0) # I want to minimize hallucination - temperature = 0 makes the model output more deterministic 
+# llm = ChatOpenAI(
+#     model="gpt-4o", temperature = 0) # I want to minimize hallucination - temperature = 0 makes the model output more deterministic 
+
+
+llm = ChatGroq(api_key=groq_api_key, model_name="Gemma2-9b-It", temperature=0.5, verbose=False)
 
 # Our Embedding Model - has to also be compatible with the LLM
-embeddings = OpenAIEmbeddings(
-    model="text-embedding-3-small",
-)
+# embeddings = OpenAIEmbeddings(
+#     model="text-embedding-3-small",
+# )
 
 
 pdf_path = "Stock_Market_Performance_2024.pdf"
@@ -48,7 +56,8 @@ text_splitter = RecursiveCharacterTextSplitter(
 
 pages_split = text_splitter.split_documents(pages) # We now apply this to our pages
 
-persist_directory = r"C:\Vaibhav\LangGraph_Book\LangGraphCourse\Agents"
+# persist_directory = r"C:\Vaibhav\LangGraph_Book\LangGraphCourse\Agents"
+persist_directory = "/Users/anant/Desktop/LLM-RAG/LangGraph/Agents"
 collection_name = "stock_market"
 
 # If our collection does not exist in the directory, we create using the os command
@@ -119,7 +128,7 @@ Please always cite the specific parts of the documents you use in your answers.
 
 tools_dict = {our_tool.name: our_tool for our_tool in tools} # Creating a dictionary of our tools
 
-# LLM Agent
+# LLM Agent 
 def call_llm(state: AgentState) -> AgentState:
     """Function to call the LLM with the current state."""
     messages = list(state['messages'])

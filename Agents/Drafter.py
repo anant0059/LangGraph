@@ -1,13 +1,18 @@
+import os
 from typing import Annotated, Sequence, TypedDict
 from dotenv import load_dotenv  
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, ToolMessage, SystemMessage
-from langchain_openai import ChatOpenAI
+# from langchain_openai import ChatOpenAI
+from langchain_groq import ChatGroq
 from langchain_core.tools import tool
 from langgraph.graph.message import add_messages
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode
 
 load_dotenv()
+
+groq_api_key = os.environ.get("groq_api_key")
+LANGSMITH_API_KEY = os.environ.get("LANGSMITH_API_KEY")
 
 # This is the global variable to store document content
 document_content = ""
@@ -50,7 +55,7 @@ def save(filename: str) -> str:
 
 tools = [update, save]
 
-model = ChatOpenAI(model="gpt-4o").bind_tools(tools)
+model = ChatGroq(api_key=groq_api_key, model_name="Gemma2-9b-It").bind_tools(tools)
 
 def our_agent(state: AgentState) -> AgentState:
     system_prompt = SystemMessage(content=f"""
